@@ -1,0 +1,46 @@
+# ---------------------------- Winlogbeat Config -------------------------------
+winlogbeat.event_logs:
+  - name: Application
+    ignore_older: 72h
+
+  - name: System
+
+  - name: Security
+
+  - name: Microsoft-Windows-Sysmon/Operational
+
+  - name: Windows PowerShell
+    event_id: 400, 403, 600, 800
+
+  - name: Microsoft-Windows-PowerShell/Operational
+    event_id: 4103, 4104, 4105, 4106
+
+  - name: ForwardedEvents
+    tags: [forwarded]
+
+setup.template.settings:
+  index.number_of_shards: 1
+  #index.codec: best_compression
+  #_source.enabled: false
+
+# ------------------------------ Kibana Setup ----------------------------------
+#setup.kibana:
+#  host: "https://172.16.0.116:5601"
+
+# ---------------------------- Elasticsearch Output ----------------------------
+output.elasticsearch:
+  hosts: ["https://172.16.0.72:9200"]
+  username: "elastic"
+  password: "eEyJH-ewvxc7+4o=iTR1"
+  ssl:
+    enabled: true
+    ca_trusted_fingerprint: "274af56eb6a5b11d6be2059ae5c97f9c176d7ae5d64b0b7d4596c080ccfc0cc9" 
+
+  # Pipeline to route events to security, sysmon, or powershell pipelines.
+  pipeline: "winlogbeat-%{[agent.version]}-routing"
+
+# ================================= Processors =================================
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_cloud_metadata: ~
